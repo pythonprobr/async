@@ -1,4 +1,0 @@
-async
-=====
-
-Asynchronous programming examples
