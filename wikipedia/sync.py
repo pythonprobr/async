@@ -1,5 +1,8 @@
 """
 Wikipedia Picture of the Day (POTD) download example
+
+Baseline synchronous example for comparison: downloads images and metadata
+in the simple but slow synchronous way i.e. one after the other.
 """
 
 from __future__ import print_function
