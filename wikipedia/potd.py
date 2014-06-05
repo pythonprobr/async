@@ -19,8 +19,6 @@ import argparse
 SAVE_DIR = 'pictures/'
 POTD_BASE_URL = 'http://en.wikipedia.org/wiki/Template:POTD/'
 
-verbose = False
-
 class NoPictureForDate(Exception):
     '''No Picture of the Day found for {day}'''
 
@@ -48,7 +46,7 @@ def build_save_path(iso_date, url):
     head, filename = os.path.split(url)
     return os.path.join(SAVE_DIR, iso_date+'_'+filename)
 
-def save_one(iso_date):
+def save_one(iso_date, verbose):
     page_url = build_page_url(iso_date)
     response = fetch(page_url)
     if response.status_code != 200:
@@ -63,22 +61,22 @@ def save_one(iso_date):
         fp.write(response.content)
     return len(response.content)
 
-def save_month(year_month):
+def save_month(year_month, verbose):
     year, month = [int(s) for s in year_month.split('-')]
     total_size = 0
     img_count = 0
     dates = list_days_of_month(year, month)
+
     for date in dates:
         try:
-            total_size += save_one(date)
+            total_size += save_one(date, verbose)
             img_count += 1
         except NoPictureForDate:
-            break
+            continue
     return img_count, total_size
 
-def main():
+def main(save_one=save_one, save_month=save_month):
     """Get "Picture of The Day" from English Wikipedia for a given date or month"""
-    global verbose
     parser = argparse.ArgumentParser(description=main.__doc__)
     parser.add_argument('date', help='year, month and (optional) day in YYYY-MM-DD format')
     parser.add_argument('-q', '--max_qty', type=int,
@@ -86,14 +84,13 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='display progress information')
     args = parser.parse_args()
-    verbose = args.verbose
 
     t0 = time.time()
     if len(args.date) == len('YYYY-MM-DD'):
         img_count = 1
-        total_size = save_one(args.date)
+        total_size = save_one(args.date, args.verbose)
     else:
-        img_count, total_size = save_month(args.date)
+        img_count, total_size = save_month(args.date, args.verbose)
     elapsed = time.time() - t0
     print("images: %3d |  total size: %6.1f Kbytes  |  elapsed time: %3ds" %
           (img_count, total_size/1024.0, elapsed))
