@@ -35,18 +35,18 @@ class TestSequenceFunctions(unittest.TestCase):
         response = potd.fetch(self.thumb_url)
         self.assertEqual(response.headers['content-type'], 'image/jpeg')
 
-    def test_get_days_of_month(self):
+    def test_list_days_of_month(self):
         year = 2014
         month = 5
-        days = potd.get_days_of_month(year, month)
+        days = potd.list_days_of_month(year, month)
         self.assertEqual(len(days), 31)
         self.assertEqual('2014-05-01', days[0])
         self.assertEqual('2014-05-31', days[-1])
 
-    def test_get_days_of_february(self):
+    def test_list_days_of_february(self):
         year = 2014
         month = 2
-        days = potd.get_days_of_month(year, month)
+        days = potd.list_days_of_month(year, month)
         self.assertEqual(len(days), 28)
         self.assertEqual('2014-02-01', days[0])
         self.assertEqual('2014-02-28', days[-1])

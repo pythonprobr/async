@@ -27,7 +27,7 @@ def extract_image_url(html):
 def format_date(year, month, day):
     return '{year}-{month:02d}-{day:02d}'.format(**locals())
 
-def get_days_of_month(year, month):
+def list_days_of_month(year, month):
     lastday = calendar.monthrange(year, month)[1]
     days = [format_date(year, month, day) for day in range(1, lastday + 1)]
     return days
@@ -51,7 +51,7 @@ def save_one(iso_date):
 def save_month(year_month):
     year, month = [int(s) for s in year_month.split('-')]
     total_size = 0
-    dates = get_days_of_month(year, month)
+    dates = list_days_of_month(year, month)
     for date in dates:
         total_size += save_one(date)
     return len(dates), total_size
