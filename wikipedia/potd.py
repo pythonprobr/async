@@ -1,3 +1,10 @@
+"""
+Wikipedia Picture of the Day (POTD) download example
+
+Baseline synchronous example for comparison: downloads metadata and
+images in the simple but slow synchronous way i.e. one after the other.
+"""
+
 import calendar
 import datetime
 import re
@@ -10,10 +17,15 @@ import requests
 import argparse
 
 SAVE_DIR = 'pictures/'
+POTD_BASE_URL = 'http://en.wikipedia.org/wiki/Template:POTD/'
+
+verbose = False
+
+class NoPictureForDate(Exception):
+    '''No Picture of the Day found for {day}'''
 
 def build_page_url(iso_date):
-    base_url = 'http://en.wikipedia.org/wiki/Template:POTD/'
-    return base_url + iso_date
+    return POTD_BASE_URL + iso_date
 
 def fetch(url):
     response = requests.get(url)
@@ -39,6 +51,9 @@ def build_save_path(iso_date, url):
 def save_one(iso_date):
     page_url = build_page_url(iso_date)
     response = fetch(page_url)
+    if response.status_code != 200:
+        msg = NoPictureForDate.__doc__.format(day=iso_date)
+        raise NoPictureForDate(msg)
     img_url = extract_image_url(response.text)
     response = fetch(img_url)
     path = build_save_path(iso_date, img_url)
@@ -51,10 +66,15 @@ def save_one(iso_date):
 def save_month(year_month):
     year, month = [int(s) for s in year_month.split('-')]
     total_size = 0
+    img_count = 0
     dates = list_days_of_month(year, month)
     for date in dates:
-        total_size += save_one(date)
-    return len(dates), total_size
+        try:
+            total_size += save_one(date)
+            img_count += 1
+        except NoPictureForDate:
+            break
+    return img_count, total_size
 
 def main():
     """Get "Picture of The Day" from English Wikipedia for a given date or month"""
